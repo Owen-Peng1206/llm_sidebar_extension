@@ -14,10 +14,9 @@ const md = new MarkdownIt();
 let config = null;
 chrome.storage.sync.get('providerConfig', (data) => {
   config = data.providerConfig;
-  if (config) providerInfo.textContent = `Provider: ${config.id}`;
+  if (config) providerInfo.textContent = `Model Provider: ${config.id}`;
 });
 
-// Updated loadChatHistory with JSON error handling
 function loadChatHistory() {
   const history = localStorage.getItem('chatHistory');
   if (history) {
@@ -26,7 +25,6 @@ function loadChatHistory() {
       chatHistory = JSON.parse(history);
     } catch (e) {
       console.error('Failed to parse chatHistory:', e);
-      // If parsing fails, clear corrupted history
       localStorage.removeItem('chatHistory');
       return;
     }
@@ -38,7 +36,6 @@ function loadChatHistory() {
   }
 }
 
-// Save chat history to local storage
 function saveChatHistory(role, content) {
   const history = localStorage.getItem('chatHistory');
   let chatHistory = [];
@@ -51,7 +48,6 @@ function saveChatHistory(role, content) {
   return timestamp;
 }
 
-// Display message in response area
 function displayMessage(role, content, timestamp = new Date().toISOString(), save = true) {
   const messageDiv = document.createElement('div');
   messageDiv.classList.add(role === 'user' ? 'user-message' : 'assistant-message');
@@ -64,7 +60,6 @@ function displayMessage(role, content, timestamp = new Date().toISOString(), sav
 
   responseArea.appendChild(messageDiv);
 
-  // Scroll to top of new message briefly, then scroll to bottom
   messageDiv.scrollIntoView({ behavior: 'auto', block: 'start' });
   responseArea.scrollTop = responseArea.scrollHeight;
     if (save) {
@@ -114,46 +109,50 @@ sendBtn.addEventListener('click', () => {
   textarea.value = '';
 });
 
-chatBtn.addEventListener('click', () => {
-  const prompt = promptText.value.trim();
-  if (prompt) {
+function sendChat() {
+  const prompt = promptText.textContent.trim();
+  if (!prompt) return;
     const timestamp = saveChatHistory('user', prompt);
     displayMessage('user', prompt, timestamp, false);
     send({ type: 'CHAT', payload: { customText: prompt } });
-    promptText.value = '';
+    promptText.textContent = '';
+  }
+chatBtn.addEventListener('click', sendChat);
+promptText.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
   }
 });
 
 saveBtn.addEventListener('click', () => {
-    const markdownContent = Array.from(responseArea.children)
-        .map(message => {
-            const role = message.classList.contains('user-message') ? 'user' : 'assistant';
-            const content = message.querySelector('.markdown-body')?.innerHTML || message.innerHTML;
-            const timestamp = message.querySelector('.timestamp')?.textContent || '';
-
-            return `**${role} (${timestamp}):**\n${content}`;
-        })
-        .join('\n\n');
-    const blob = new Blob([markdownContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'llm-response.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const markdownContent = Array.from(responseArea.children)
+      .map(message => {
+          const role = message.classList.contains('user-message') ? 'user' : 'assistant';
+          const content = message.querySelector('.markdown-body')?.innerHTML || message.innerHTML;
+          const timestamp = message.querySelector('.timestamp')?.textContent || '';
+          return `**${role} (${timestamp}):**\n${content}`;
+      })
+      .join('\n\n');
+  const blob = new Blob([markdownContent], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'llm-response.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 });
 
 clearBtn.addEventListener('click', () => {
   responseArea.innerHTML = '';
   localStorage.removeItem('chatHistory');
 });
-
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'MODEL_RESPONSE') {
-        const timestamp = saveChatHistory('assistant', msg.data);
-        displayMessage('assistant', msg.data, timestamp, false);
+    const timestamp = saveChatHistory('assistant', msg.data);
+    displayMessage('assistant', msg.data, timestamp, false);
   }
 });
 
