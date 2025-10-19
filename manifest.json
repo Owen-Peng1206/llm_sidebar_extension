@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "LLM Sidebar",
+  "description": "Summarise, translate any page with a LLM provider of your choice.",
+  "version": "0.0.1",
+  "icons": {
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "tabs"
+  ],
+  "side_panel": {
+    "default_path": "src/ui/sidebar/index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "src/ui/options/optionsTemplate.html",
+    "open_in_tab": false
+  },
+  "action": {
+    "default_icon": { "128": "icons/icon-128.png" },
+    "default_title": "Click to open panel"
+  },
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/ui/options/optionsTemplate.html", 
+        "src/ui/options/options.css",
+        "src/ui/options/options.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]  
+}
+

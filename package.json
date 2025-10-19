@@ -1,0 +1,37 @@
+{
+  "type": "module",
+  "name": "llm-sidebar",
+  "version": "1.0.0",
+  "description": "Chrome sidebar that lets you summarise, translate any page with a LLM provider of your choice.",
+  "main": "dist/background.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext .ts,.js --quiet",
+    "type-check": "tsc --noEmit",
+    "check-dist": "npm run build && echo 'Build succeeded' && tree -L 2 dist | head -n 20"
+  },
+  "keywords": [
+    "chrome-extension",
+    "sidebar",
+    "openai",
+    "anthropic"
+  ],
+  "author": "Owen Peng",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/chrome": "^0.0.229",
+    "@types/node": "^24.7.2",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.4.0",
+    "jiti": "^2.6.1",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.46.1",
+    "vite": "^5.0.10"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0"
+  }
+}
