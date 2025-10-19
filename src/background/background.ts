@@ -26,6 +26,8 @@ function buildPrompt(type: string, text: string, lang?: string) {
       return `Rewrite the following content in a more formal tone:\n\n${text}`;
     case 'EXTRACT_CONTENT':
       return `Please answer in Traditional Chinese. Please extract the main content from the following webpage, ignoring navigation, ads, sidebars, and other boilerplate, and then provide a concise summary of that content:\n\n${text}`;
+    case 'YOUTUBE_SUMMARIZE':
+      return `Please extract the main content from the following YouTube video (title, description, subtitles) and provide a summary in Traditional Chinese, including excerpts and descriptions of each key paragraph mentioned in the video.:\n\n${text}`;      
     case 'CHAT':
       return text;          
     default:
@@ -221,6 +223,12 @@ chrome.runtime.onMessage.addListener(async (msg, _sender, sendResponse) => {
     }
     const prompt = buildPrompt(msg.type, pageText, msg.payload?.lang);
     processText(prompt);
+  }
+  if (msg.type === 'YOUTUBE_SUMMARIZE') {
+    const { title, description, transcript } = msg.payload || {};
+    const combined = `${title}\n\n${description}\n\n${transcript}`;
+    const prompt = buildPrompt('YOUTUBE_SUMMARIZE', combined);
+    processText(prompt);    
   }
   return true;
 });
