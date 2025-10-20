@@ -1,9 +1,9 @@
-// src/background/storage.ts
 export interface ProviderConfig {
   id: string;
   apiKey: string;
   baseURL?: string;
   model?: string;
+  targetLang?: string; // Added target language preference
 }
 
 export async function saveProviderConfig(config: ProviderConfig): Promise<void> {

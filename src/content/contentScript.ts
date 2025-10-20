@@ -18,7 +18,7 @@ function getYouTubeVideoInfo() {
 
 const btn = document.createElement('button');
 btn.style.position = 'fixed';
-btn.textContent = 'AI Asst';
+btn.textContent = 'LLM';
 btn.style.zIndex = '99999';
 btn.style.padding = '8px 12px';
 btn.style.background = 'rgba(255, 255, 255, 0.38)';
@@ -117,6 +117,7 @@ function createModal() {
           apiKey: (modalContainer.querySelector('#apiKey') as HTMLInputElement)?.value,
           baseURL: (modalContainer.querySelector('#baseURL') as HTMLInputElement)?.value,
           model: (modalContainer.querySelector('#model') as HTMLInputElement)?.value,
+          targetLang: (modalContainer.querySelector('#targetlang') as HTMLInputElement)?.value,
         };
         await saveProviderConfig(newConfig);
         const status = modalContainer.querySelector('#status');

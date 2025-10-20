@@ -1,10 +1,11 @@
-const form   = document.getElementById('settingsForm');
+const form = document.getElementById('settingsForm');
 const statusel = document.getElementById('status');
 const providerInput = document.getElementById('provider');
-const apiKeyInput   = document.getElementById('apiKey');
-const baseURLInput  = document.getElementById('baseURL');
-const modelInput    = document.getElementById('model');
-const saveBtn       = document.getElementById('saveBtn');
+const apiKeyInput = document.getElementById('apiKey');
+const baseURLInput = document.getElementById('baseURL');
+const modelInput = document.getElementById('model');
+const targetLangSelect = document.getElementById('targetLang');
+const saveBtn = document.getElementById('saveBtn');
 
 async function populate() {
   const config = await new Promise((resolve) => {
@@ -15,17 +16,20 @@ async function populate() {
 
   if (!config) return;
   providerInput.value = config.id || '';
-  apiKeyInput.value   = config.apiKey || '';
-  baseURLInput.value  = config.baseURL || '';
-  modelInput.value    = config.model || '';
+  apiKeyInput.value = config.apiKey || '';
+  baseURLInput.value = config.baseURL || '';
+  modelInput.value = config.model || '';
+  targetLangSelect.value = config.targetLang || '';
+  
 }
 
 saveBtn.addEventListener('click', async () => {
   const config = {
     id: providerInput.value,
-    apiKey:   apiKeyInput.value,
-    baseURL:  baseURLInput.value,
-    model:    modelInput.value
+    apiKey: apiKeyInput.value,
+    baseURL: baseURLInput.value,
+    model: modelInput.value,
+    targetLang: targetLangSelect ? targetLangSelect.value : ''
   };
   try {
     await new Promise((resolve, reject) => {
@@ -35,10 +39,10 @@ saveBtn.addEventListener('click', async () => {
       });
     });
     statusel.textContent = '✔︎ Saved';
-    statusel.style.color  = 'green';
+    statusel.style.color = 'green';
   } catch (e) {
     statusel.textContent = '❌ Failed';
-    statusel.style.color  = 'red';
+    statusel.style.color = 'red';
   }
 });
 

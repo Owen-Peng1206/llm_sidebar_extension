@@ -2,14 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- <title>LLM Sidebar Settings</title> -->
   <link rel="stylesheet" href="options.css">
-  <!-- <script type="module" defer src="options.js"></script> -->
 </head>
 <body>
 <div class="modal">
-  <!-- <button class="close-btn" aria-label="Close">&times;</button> -->
-  <!-- <h2>LLM Sidebar Settings</h2> -->
   <form id="settingsForm">
     <label for="provider">
       Provider:
@@ -31,7 +27,19 @@
       Model name:
       <input type="text" id="model" placeholder="gpt-4o-mini">
     </label>
-    <button type="button" id="saveBtn">Save</button>    
+    <label for="targetLang">
+      Translate Target Language:
+      <select id="targetLang">
+        <option value="English">English (en)</option>
+        <option value="Spanish">Spanish (es)</option>
+        <option value="French">French (fr)</option>
+        <option value="German">German (de)</option>
+        <option value="Japan">Japan (jp)</option>
+        <option value="zh-TW">Trand-Chinese (zh-TW)</option>
+        <option value="zh-CN">Simp-Chinese (zh-CN)</option>
+      </select>
+    </label>
+    <button type="button" id="saveBtn">Save Settings</button>    
     <span id="status"></span>    
   </form>
 </div>
