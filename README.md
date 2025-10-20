@@ -42,11 +42,10 @@ Load the `dist/` folder into Chrome/Edge:
 ## Project Structure
 
 ```
-my-extension/
+llm_sidebar_extension/
 ├─ src/
 │   ├─ background/
 │   │   ├─ background.ts
-│   │   ├─ types.ts
 │   │   ├─ storage.ts
 │   │   └─ providers/
 │   │       ├─ OpenAI.ts

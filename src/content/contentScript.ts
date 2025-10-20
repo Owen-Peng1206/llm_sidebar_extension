@@ -1,9 +1,24 @@
 import { loadProviderConfig, saveProviderConfig } from '../background/storage';
 
+function getYouTubeVideoInfo() {
+  const title = document.title || '';
+  const descEl = document.querySelector('yt-formatted-string#description');
+  const description = descEl ? descEl.textContent?.trim() || '' : '';
+  let transcript = '';
+  try {
+    const transcriptNodes = document.querySelectorAll('ytd-transcript-text-renderer');
+    if (transcriptNodes.length) {
+      transcript = Array.from(transcriptNodes)
+        .map((node: Element) => node.textContent?.trim() || '')
+        .join('\n');
+    }
+  } catch (_) {}
+  return { title, description, transcript };
+}
+
 const btn = document.createElement('button');
 btn.style.position = 'fixed';
-// Set button label
-btn.textContent = 'AI Asst';
+btn.textContent = 'LLM';
 btn.style.zIndex = '99999';
 btn.style.padding = '8px 12px';
 btn.style.background = 'rgba(255, 255, 255, 0.38)';
@@ -55,7 +70,13 @@ window.addEventListener('mouseup', onMouseUp);
 
 btn.addEventListener('click', () => {
   chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
-  chrome.runtime.sendMessage({ type: 'EXTRACT_CONTENT' });
+  const isYouTube = window.location.host.includes('youtube.com') && /\/watch\b/.test(window.location.pathname);
+  if (isYouTube) {
+    const videoInfo = getYouTubeVideoInfo();
+    chrome.runtime.sendMessage({ type: 'YOUTUBE_SUMMARIZE', payload: videoInfo });
+  }else{
+    chrome.runtime.sendMessage({ type: 'EXTRACT_CONTENT' });
+  }  
 });
 
 document.body.appendChild(btn);
@@ -96,6 +117,7 @@ function createModal() {
           apiKey: (modalContainer.querySelector('#apiKey') as HTMLInputElement)?.value,
           baseURL: (modalContainer.querySelector('#baseURL') as HTMLInputElement)?.value,
           model: (modalContainer.querySelector('#model') as HTMLInputElement)?.value,
+          targetLang: (modalContainer.querySelector('#targetlang') as HTMLInputElement)?.value,
         };
         await saveProviderConfig(newConfig);
         const status = modalContainer.querySelector('#status');

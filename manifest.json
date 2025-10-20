@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LLM Sidebar",
   "description": "Summarise, translate any page with a LLM provider of your choice.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icons": {
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
