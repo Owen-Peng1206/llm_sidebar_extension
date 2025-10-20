@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LLM Sidebar",
   "description": "Summarise, translate any page with a LLM provider of your choice.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icons": {
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
@@ -42,6 +42,11 @@
       "resources": [
         "src/ui/options/optionsTemplate.html", 
         "src/ui/options/options.css",
+        "src/ui/sidebar/index.html",
+        "src/ui/sidebar/markdown-it.min.js",
+        "src/ui/sidebar/light.css",
+        "src/ui/sidebar/dark.css",
+        "src/ui/sidebar/sidebar.js",
         "src/ui/options/options.js"],
       "matches": ["<all_urls>"]
     }

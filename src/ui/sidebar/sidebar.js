@@ -1,5 +1,22 @@
 import MarkdownIt from 'markdown-it';
 
+const skinLink = document.getElementById('themeStyles');
+
+async function applySkin() {
+  const config = await new Promise((resolve) => {
+    chrome.storage.sync.get('providerConfig', (data) => resolve(data.providerConfig || {}));
+  });
+  const skin = config.skin || 'dark';
+  if (skin === 'light') {
+    skinLink.href = 'light.css';
+  } else {
+    skinLink.href = 'dark.css';
+  }
+}
+
+// Apply theme after DOM ready
+document.addEventListener('DOMContentLoaded', () => applySkin());
+
 const providerInfo = document.getElementById('providerInfo');
 const responseArea = document.getElementById('responseArea');
 const summariseBtn = document.getElementById('summariseBtn');
@@ -62,7 +79,8 @@ function displayMessage(role, content, timestamp = new Date().toISOString(), sav
 
   messageDiv.scrollIntoView({ behavior: 'auto', block: 'start' });
   responseArea.scrollTop = responseArea.scrollHeight;
-    if (save) {
+
+  if (save) {
     saveChatHistory(role, content);
   }
 }
@@ -112,11 +130,11 @@ sendBtn.addEventListener('click', () => {
 function sendChat() {
   const prompt = promptText.textContent.trim();
   if (!prompt) return;
-    const timestamp = saveChatHistory('user', prompt);
-    displayMessage('user', prompt, timestamp, false);
-    send({ type: 'CHAT', payload: { customText: prompt } });
-    promptText.textContent = '';
-  }
+  const timestamp = saveChatHistory('user', prompt);
+  displayMessage('user', prompt, timestamp, false);
+  send({ type: 'CHAT', payload: { customText: prompt } });
+  promptText.textContent = '';
+}
 chatBtn.addEventListener('click', sendChat);
 promptText.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -126,15 +144,22 @@ promptText.addEventListener('keydown', (e) => {
 });
 
 saveBtn.addEventListener('click', () => {
-  const markdownContent = Array.from(responseArea.children)
-      .map(message => {
-          const role = message.classList.contains('user-message') ? 'user' : 'assistant';
-          const content = message.querySelector('.markdown-body')?.innerHTML || message.innerHTML;
-          const timestamp = message.querySelector('.timestamp')?.textContent || '';
-          return `**${role} (${timestamp}):**\n${content}`;
-      })
-      .join('\n\n');
-  const blob = new Blob([markdownContent], { type: 'text/markdown' });
+  const markdownParts = [];
+  let prevRole = null;
+  Array.from(responseArea.children).forEach((message) => {
+      const role = message.classList.contains('user-message') ? 'user' : 'assistant';
+      const content = message.querySelector('.markdown-body')?.innerHTML || message.innerHTML;
+      const timestamp = message.querySelector('.timestamp')?.textContent || '';
+    let header = `<br> **${role}`;
+    if (role !== prevRole) {
+      header += ` (${timestamp})`;
+      prevRole = role;
+    }
+    header += `:**`;
+    markdownParts.push(`${header}\n${content}\n\n<br>`);
+  });
+  const markdownContent = markdownParts.join('\n\n');
+  const blob = new Blob([markdownContent], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -149,6 +174,7 @@ clearBtn.addEventListener('click', () => {
   responseArea.innerHTML = '';
   localStorage.removeItem('chatHistory');
 });
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'MODEL_RESPONSE') {
     const timestamp = saveChatHistory('assistant', msg.data);
