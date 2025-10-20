@@ -14,6 +14,8 @@ const copyPlugin = (): Plugin => ({
       { src: join('src', 'ui', 'options', 'options.css'), dst: join('src', 'ui', 'options', 'options.css') },
       { src: join('src', 'ui', 'options', 'optionsTemplate.html'), dst: join('src', 'ui', 'options', 'optionsTemplate.html') },      
       { src: join('src', 'ui', 'options', 'options.js'), dst: join('src', 'ui', 'options', 'options.js') },   
+      { src: join('src', 'ui', 'sidebar', 'light.css'), dst: join('src', 'ui', 'sidebar', 'light.css') },   
+      { src: join('src', 'ui', 'sidebar', 'dark.css'), dst: join('src', 'ui', 'sidebar', 'dark.css') },   
     ];
 
     for (const { src, dst } of patterns) {

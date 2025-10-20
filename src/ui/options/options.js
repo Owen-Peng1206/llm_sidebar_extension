@@ -20,7 +20,8 @@ async function populate() {
   baseURLInput.value = config.baseURL || '';
   modelInput.value = config.model || '';
   targetLangSelect.value = config.targetLang || '';
-  
+  const skinRadio = document.querySelector(`input[name="skin"][value="${config.skin || 'dark'}"]`);
+  if (skinRadio) skinRadio.checked = true;
 }
 
 saveBtn.addEventListener('click', async () => {
@@ -29,7 +30,8 @@ saveBtn.addEventListener('click', async () => {
     apiKey: apiKeyInput.value,
     baseURL: baseURLInput.value,
     model: modelInput.value,
-    targetLang: targetLangSelect ? targetLangSelect.value : ''
+    targetLang: targetLangSelect ? targetLangSelect.value : '',
+    skin: document.querySelector('input[name="skin"]:checked').value
   };
   try {
     await new Promise((resolve, reject) => {

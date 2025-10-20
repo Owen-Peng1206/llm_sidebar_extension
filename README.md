@@ -9,6 +9,7 @@ A Chrome extension that adds a sidebar for summarising, translating any web page
 - **Summarise** - Summarise the web page.
 - **Translate**: Translate the web page .
 - **Chat & export chat history**: Chat with LLM server and export the chat history.
+- **Skin select**: Dark or Light theme select.
 
 ## DEMO
 

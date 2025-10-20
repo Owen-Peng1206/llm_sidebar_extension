@@ -1,0 +1,167 @@
+/* Light theme for LLM Sidebar */
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #f9f9f9;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: hidden;  
+  color: #222;
+}
+
+.card {
+  background: #fff;  
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: auto;
+  flex: 1;
+  overflow: hidden;
+  color: #222;
+  /* border: 1px solid #ddd; */
+}
+h2 {
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+  color: #bb86fc;
+}
+#providerInfo {
+  font-size: .9rem;
+  color: #555;
+}
+.button-grouptop {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+button {
+  background: transparent;
+  /* color: #a0a0a0; */
+  /* border: 1px solid #444; */
+  padding: 10px 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  width: auto;
+
+  /* background: #fff; */
+  color: #222;
+  border: 1px solid #ccc;
+}
+
+button:hover {
+  /* background: #444; */
+  color: #fff;
+  border-color: #333;
+
+  background: #e0e0e0;
+}
+hr {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 12px 0;
+}
+.markdown-body {
+  /* background: #1e1e1e; */
+  padding: 12px;
+  border-radius: 6px;
+  overflow-y: auto;
+  font-size: .95rem;
+  /* color: #e0e0e0; */
+  width: 100%;
+  min-width: 98%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  background: #fff;
+  color: #222;
+  /* border: 1px solid #ddd; */
+}
+.markdown-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.markdown-body::-webkit-scrollbar-track,
+.markdown-body::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.user-message,
+.assistant-message {
+  padding: 8px 12px;
+  border-radius: 8px;
+  position: relative;
+  word-break: break-word;
+}
+.user-message {
+  align-self: flex-end;
+  text-align: right;  
+  background: #e0f7fa;
+  color: #004d40;
+}
+
+.assistant-message {
+  align-self: flex-start;
+  text-align: left;  
+  background: #e8eaf6;
+  color: #1a237e;
+}
+
+.timestamp {
+  /* position: absolute; */
+  bottom: -1.2em;
+  font-size: .3rem;
+  color: #888;
+  /* text-Align: right; */
+  display: block;
+  margin-top:4px;
+}
+
+.input-area {
+  width: 98%;
+  margin: 0 auto;
+  max-width: 800px;
+  border-radius: 8px;
+  position: sticky;
+  bottom: 0;
+  /* background: #1e1e1e; */
+  padding: 10px 20px;
+  /* border-top: 1px solid #333; */
+  overflow-y: auto;
+
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+}
+.promptText {
+  flex: 1;
+  min-height: 2.9em;
+  padding: 2px;
+  border: 1px solid #bdbcbc;
+  border-radius: 8px;
+  background: #f2f2f2;
+  color: #434343;
+  font-size: 1rem;
+  height: auto;
+  overflow: auto;
+}
+svg {
+  stroke: #555;
+}
+
+/* End of light theme */
