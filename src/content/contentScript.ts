@@ -30,8 +30,10 @@ btn.style.cursor = 'pointer';
 const savedPos = window.localStorage.getItem('llmBtnPos');
 if (savedPos) {
   const { left, top } = JSON.parse(savedPos);
-  btn.style.left = left;
-  btn.style.top = top;
+  const numericLeft = parseFloat(left);   // <‑‑ convert
+  const numericTop = parseFloat(top);
+  btn.style.left = `${numericLeft}px`;   // ensure px unit
+  btn.style.top = `${numericTop}px`;
 } else {
   btn.style.left = '15px';
   btn.style.top = 'calc(100% - 45px)';
@@ -46,8 +48,10 @@ btn.addEventListener('mousedown', (e) => {
   isDragging = true;
   dragStartX = e.clientX;
   dragStartY = e.clientY;
-  btnStartLeft = parseInt(btn.style.left || '0', 10);
-  btnStartTop = parseInt(btn.style.top || '0', 10);
+  // use getBoundingClientRect() so we get actual pixel values
+  const rect = btn.getBoundingClientRect();
+  btnStartLeft = rect.left;
+  btnStartTop = rect.top;
   e.preventDefault();
 });
 
@@ -62,7 +66,14 @@ function onMouseMove(e: MouseEvent) {
 function onMouseUp() {
   if (!isDragging) return;
   isDragging = false;
-  window.localStorage.setItem('llmBtnPos', JSON.stringify({ left: btn.style.left, top: btn.style.top }));
+  // window.localStorage.setItem('llmBtnPos', JSON.stringify({ left: btn.style.left, top: btn.style.top }));
+  window.localStorage.setItem(
+  'llmBtnPos',
+  JSON.stringify({
+    left: `${btnStartLeft}px`,
+    top: `${btnStartTop}px`,
+  })
+);
 }
 
 window.addEventListener('mousemove', onMouseMove);
@@ -120,8 +131,10 @@ function createModal() {
           targetLang: (modalContainer.querySelector('#targetlang') as HTMLInputElement)?.value,
         };
         await saveProviderConfig(newConfig);
+        // const status = modalContainer.querySelector('#status');
+        // status!.textContent = '✔︎ Saved';
         const status = modalContainer.querySelector('#status');
-        status!.textContent = '✔︎ Saved';
+        if (status) status.textContent = '✔︎ Saved';        
       });
 
       document.body.appendChild(modalContainer);
@@ -130,12 +143,15 @@ function createModal() {
 }
 
 window.addEventListener('message', (e) => {
-  if (e.data?.type === 'SHOW_SETTINGS') createModal();
+  // if (e.data?.type === 'SHOW_SETTINGS') createModal();
+  if (e.data?.type === 'SHOW_SETTINGS' && e.origin === chrome.runtime.getURL('')) createModal();
 });
 
 const openOptionsBtn = document.getElementById('open-options');
 if (openOptionsBtn) {
   openOptionsBtn.addEventListener('click', () => {
-    window.postMessage({ type: 'OPEN_OPTIONS' }, '*');
+    // window.postMessage({ type: 'OPEN_OPTIONS' }, '*');
+    window.postMessage({ type: 'OPEN_OPTIONS' }, chrome.runtime.getURL(''));
   });
 }
+

@@ -18,6 +18,30 @@ async function getProviderConfig(): Promise<ProviderConfig | null> {
   });
 }
 
+/**
+ * Helper to execute `extractTextFromDOM` and return a promise that
+ * rejects on script injection failures.  This is used by the context‑menu
+ * fallback logic to avoid silently swallowing errors.
+ */
+function runExtractTextFromDOM(tabId: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    chrome.scripting.executeScript(
+      {
+        target: { tabId },
+        func: extractTextFromDOM,
+        args: [],
+      },
+      (results) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+          return;
+        }
+        resolve(results?.[0]?.result ?? '');
+      }
+    );
+  });
+}
+
 function buildPrompt(type: string, text: string, lang?: string) {
   switch (type) {
     case 'SUMMARISE':  
@@ -25,7 +49,7 @@ function buildPrompt(type: string, text: string, lang?: string) {
     case 'TRANSLATE':
       return `Translate into ${lang || 'Traditional Chinese'}:\n\n${text}`;
     case 'TRANSLATE_SELECT_INNER':
-      return `keep the original HTML format. do not add extra text. don not add markdown tag. Translate the following content to ${lang || 'Traditional Chinese'}:\n\n${text}`;
+      return `keep the original HTML format. do not add extra text. do not add markdown tag. Translate the following content to ${lang || 'Traditional Chinese'}:\n\n${text}`;
     case 'REWRITE':
       return `Rewrite the following content in a more formal tone:\n\n${text}`;
     case 'EXTRACT_CONTENT':
@@ -58,7 +82,7 @@ async function processText(raw: string) {
   const chunks = chunkText(raw);
   const combinedPrompt = chunks.join('\n');
 
-  const result = await provider.sendPrompt(combinedPrompt, { streaming: true });
+  const result = await provider.sendPrompt(combinedPrompt, { streaming: false });
 
   chrome.runtime.sendMessage({ type: 'MODEL_RESPONSE', data: result });
 }
@@ -136,11 +160,38 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         chrome.scripting.executeScript({
           target: { tabId: tab.id! },
           func: (translatedText: string) => {
+            const sanitize = (html: string) => {
+              const div = document.createElement('div');
+              div.innerHTML = html;
+
+              const allowedTags = ['b', 'i', 'strong', 'em', 'p', 'br', 'ul', 'ol', 'li', 'a'];
+              const nodes = div.querySelectorAll('*');
+              nodes.forEach(node => {
+                const tag = node.tagName.toLowerCase();
+                if (!allowedTags.includes(tag)) {
+                  const text = document.createTextNode(node.textContent ?? '');
+                  node.parentNode?.replaceChild(text, node);
+                } else {
+                  Array.from(node.attributes).forEach(attr => {
+                    if (!['href', 'title', 'target', 'rel'].includes(attr.name)) {
+                      node.removeAttribute(attr.name);
+                    }
+                  });
+                  if (tag === 'a') {
+                    const href = node.getAttribute('href');
+                    if (!href || !href.match(/^https?:\/\//)) node.removeAttribute('href');
+                  }
+                }
+              });
+              return div.innerHTML;
+            };
+
             const sel = window.getSelection();
             if (!sel || sel.rangeCount === 0) return;
             const range = sel.getRangeAt(0);
             range.deleteContents();
-            const fragment = range.createContextualFragment(translatedText);
+            const sanitized = sanitize(translatedText);
+            const fragment = range.createContextualFragment(sanitized);
             range.insertNode(fragment);
             sel.collapseToEnd();
           },
@@ -158,8 +209,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       ? 'TRANSLATE'
       : undefined;
 
-  // const lang = type === 'TRANSLATE' ? 'zh-TW' : undefined;
-
   if (!type) return;
 
   chrome.scripting.executeScript(
@@ -170,19 +219,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     async (selResults) => {
       let pageText = selResults?.[0]?.result ?? '';
       if (!pageText) {
-        const fullResults = await new Promise<
-          chrome.scripting.InjectionResult<string>[] | undefined
-        >((resolve) => {
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tab.id! },
-              func: extractTextFromDOM,
-              args: [],
-            },
-            resolve
-          );
-        });
-        pageText = fullResults?.[0]?.result ?? '';
+        try {
+          // Use the helper that rejects on failure
+          pageText = await runExtractTextFromDOM(tab.id!);
+        } catch (err) {
+          console.error('[background] failed to extract page text in context menu:', err);
+          pageText = '';
+        }
       }
       const prompt = buildPrompt(type, pageText, targetlang);
       processText(prompt);
@@ -191,25 +234,24 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 });
 
 chrome.runtime.onMessage.addListener(async (msg, _sender, sendResponse) => {
+  // (existing message handling code unchanged)
+  if (msg.type === 'OPEN_SIDE_PANEL') {
+    if (_sender.tab?.id) {
+      try {
+        await (chrome as any).sidePanel.open({ tabId: _sender.tab.id });
+      } catch (err) {
+        console.error('[background] sidePanel open error:', err);
+      }
+    }
+    return true;
+  }
   if (
-    msg.type === 'OPEN_SIDE_PANEL' ||
     msg.type === 'EXTRACT_CONTENT' ||
     msg.type === 'SUMMARISE' ||
     msg.type === 'TRANSLATE' ||
     msg.type === 'CHAT'
   ) {
     let pageText = '';
-
-    if (msg.type === 'OPEN_SIDE_PANEL') {
-      if (_sender.tab?.id) {
-        try {
-          await (chrome as any).sidePanel.open({ tabId: _sender.tab.id });
-        } catch (err) {
-          console.error('[background] sidePanel open error:', err);
-        }
-      }
-      return true;
-    }
     const cfg = await getProviderConfig();
     const targetLang = msg.payload?.targetLang ?? cfg?.targetLang ?? 'zh-TW';
     if (msg.payload?.customText) {
